@@ -1,0 +1,29 @@
+# Env and secrets (set in Vercel dashboard)
+.env
+.env.*
+!.env.example
+credentials.json
+*.pem
+
+# Dependencies
+node_modules/
+frontend/node_modules/
+.venv/
+api/.venv/
+venv/
+__pycache__/
+*.py[cod]
+.Python
+*.so
+
+# Build and IDE
+frontend/dist/
+dist/
+.vercel/
+.vscode/
+.idea/
+*.log
+.DS_Store
+
+# Optional: keep a sample env for docs (uncomment if you add .env.example)
+# .env.example
