@@ -11,6 +11,8 @@ import {
 
 // Use proxy in dev (no CORS) or full URL if set
 const API_URL = import.meta.env.VITE_API_URL || ''
+const PASSCODE = 'HOK2026'
+const AUTH_KEY = 'tiktok_dashboard_authenticated'
 
 // Find column by possible names (handles different sheet formats)
 function findCol(row, candidates) {
@@ -45,11 +47,34 @@ function toDateStr(d) {
 }
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    try {
+      return sessionStorage.getItem(AUTH_KEY) === 'true'
+    } catch {
+      return false
+    }
+  })
+  const [passcodeInput, setPasscodeInput] = useState('')
+  const [passcodeError, setPasscodeError] = useState(false)
   const [data, setData] = useState([])
   const [lastUpdated, setLastUpdated] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [datePreset, setDatePreset] = useState('all')
+
+  function handlePasscodeSubmit(e) {
+    e.preventDefault()
+    setPasscodeError(false)
+    if (passcodeInput.trim() === PASSCODE) {
+      try {
+        sessionStorage.setItem(AUTH_KEY, 'true')
+      } catch {}
+      setIsAuthenticated(true)
+      setPasscodeInput('')
+    } else {
+      setPasscodeError(true)
+    }
+  }
   const [customStart, setCustomStart] = useState(() => {
     const d = new Date()
     d.setDate(d.getDate() - 30)
@@ -71,7 +96,7 @@ function App() {
         setError(
           `API returned invalid JSON (status ${res.status}). ` +
             (res.status === 404
-              ? 'Check that the API is running on port 8000.'
+              ? 'Set VITE_API_URL to your Railway backend URL in Vercel and redeploy, or run the API locally on port 8000.'
               : 'The API may have crashed or returned an error.')
         )
         setData([])
@@ -203,10 +228,110 @@ function App() {
     marginBottom: '1.5rem',
   }
 
+  if (!isAuthenticated) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#0f172a',
+          padding: '2rem',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: '1.5rem',
+            minHeight: '80px',
+            alignItems: 'center',
+            overflow: 'hidden',
+          }}
+        >
+          <img
+            src="/reindeers-web-logo.png"
+            alt="Reindeers logo"
+            style={{
+              maxWidth: '200px',
+              maxHeight: '80px',
+              objectFit: 'contain',
+            }}
+            onError={(e) => {
+              e.target.style.display = 'none'
+            }}
+          />
+        </div>
+        <div
+          style={{
+            background: '#1e293b',
+            borderRadius: '12px',
+            padding: '2.5rem',
+            border: '1px solid #334155',
+            minWidth: '320px',
+          }}
+        >
+          <h1 style={{ margin: '0 0 0.5rem', fontSize: '1.25rem', color: '#00F88D' }}>
+            HOK TikTok KOLs Dashboard
+          </h1>
+          <p style={{ margin: '0 0 1.5rem', color: '#94a3b8', fontSize: '0.9rem' }}>
+            Enter passcode to continue
+          </p>
+          <form onSubmit={handlePasscodeSubmit}>
+            <input
+              type="password"
+              value={passcodeInput}
+              onChange={(e) => {
+                setPasscodeInput(e.target.value)
+                setPasscodeError(false)
+              }}
+              placeholder="Passcode"
+              autoFocus
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem',
+                fontSize: '1rem',
+                background: '#0f172a',
+                border: `1px solid ${passcodeError ? '#dc2626' : '#334155'}`,
+                borderRadius: '6px',
+                color: '#f8fafc',
+                boxSizing: 'border-box',
+              }}
+            />
+            {passcodeError && (
+              <p style={{ margin: '0.5rem 0 0', color: '#f87171', fontSize: '0.875rem' }}>
+                Incorrect Passcode
+              </p>
+            )}
+            <button
+              type="submit"
+              style={{
+                marginTop: '1.25rem',
+                width: '100%',
+                padding: '0.75rem',
+                fontSize: '1rem',
+                fontWeight: 500,
+                background: '#00F88D',
+                color: '#0f172a',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+              }}
+            >
+              Enter
+            </button>
+          </form>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto' }}>
       <header style={{ marginBottom: '2rem' }}>
-        <h1 style={{ margin: 0, fontSize: '1.75rem' }}>HOK TikTok KOLs Engagement Dashboard</h1>
+        <h1 style={{ margin: 0, fontSize: '1.75rem', color: '#00F88D' }}>HOK TikTok KOLs Engagement Dashboard</h1>
         <p style={{ margin: '0.5rem 0 0', color: '#94a3b8', fontSize: '0.9rem' }}>
           Powered by Reindeers Agency.
         </p>
