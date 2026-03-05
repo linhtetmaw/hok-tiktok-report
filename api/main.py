@@ -18,9 +18,11 @@ load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / ".env")
 
 app = FastAPI(title="TikTok Dashboard API")
 
+# CORS: allow local dev and deployed frontend (Vercel / custom domain).
+# For this internal dashboard we keep it simple and allow all origins.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
